@@ -141,13 +141,11 @@ void loop()
       	numeros --; //Resta
       	if (numeros < 0 and decimales > 0)
       	{
-        	Serial.println("Pase por aca2");
         	decimales --;
       		numeros = 9;
       	}
       	if (numeros <0 and decimales == 0)
       	{
-        	Serial.println("Pase por aca");
         	numeros = 9;
       		decimales = 9;
       	}
