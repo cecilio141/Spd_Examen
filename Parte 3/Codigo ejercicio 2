@@ -1,0 +1,366 @@
+#define A 12
+#define salidaMotor A3
+#define switchTemperatura A0
+#define B 13
+#define C 7
+#define D 8
+#define E 9
+#define F 11
+#define G 10
+#define entradaSwitch 2
+#define positivoSwitch 5
+#define gndUnidad A4
+#define botonSumar 3
+#define botonRestar 4
+#define gndDecimal A5
+int numeros = 0;
+int decimales = 0;
+int sumar = 0;
+int restar = 0;
+
+int lecturaSwitch = 0;
+int contador = 0;
+int energia;
+
+int repetidor = 1;
+
+int lecturaTemperaturaSwitch;
+
+
+int indice = 0;
+int primo = 0;
+String strPrimo;
+char charPrimo[3];
+
+int numerosPrimos[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97};
+void setup()
+{
+  pinMode (salidaMotor, OUTPUT);
+  pinMode (entradaSwitch, INPUT);
+  pinMode (positivoSwitch, OUTPUT);
+  pinMode (botonSumar, INPUT_PULLUP);
+  pinMode (botonRestar, INPUT_PULLUP);
+  pinMode (gndUnidad, OUTPUT);
+  pinMode (gndDecimal, OUTPUT);
+  pinMode (A, OUTPUT);
+  pinMode (B, OUTPUT);
+  pinMode (C, OUTPUT);
+  pinMode (D, OUTPUT);
+  pinMode (E, OUTPUT);
+  pinMode (F, OUTPUT);
+  pinMode (G, OUTPUT);
+  digitalWrite(positivoSwitch, HIGH);
+  Serial.begin(9600);
+
+}
+
+
+void loop()
+{
+  lecturaTemperaturaSwitch = digitalRead(switchTemperatura);
+  int lecturaTemperatura;
+  lecturaTemperatura = analogRead(A1);
+  int temperatura = map(lecturaTemperatura, 20, 358, -40, 125); // map(lectura de entrada, inicio de lectura, final de lectura, inicio de salida, final de salida)
+  if (temperatura >0 and temperatura <30)
+  {
+    digitalWrite(salidaMotor, HIGH);
+    energia = 1;
+  }
+  else
+  {
+    digitalWrite(salidaMotor, LOW);
+    digitalPrint(10);
+    energia = 0;
+    if (repetidor == 1)
+    {
+      Serial.println("Para que el motor se encienda debe haber una temperatura mayor a 0 grados y menor a 30 grados");
+      repetidor = 0;
+    }
+    
+  }
+  if (energia == 1)
+  {
+  if (lecturaTemperaturaSwitch == 1)
+  {
+
+    if (temperatura > 0 and temperatura < 10)
+    {
+      digitalWrite(gndDecimal, HIGH);
+      digitalPrint(temperatura);
+    }
+    if (temperatura >9 and temperatura <100)
+    {
+      String strTemperatura;
+      char charTemperatura[2];
+      strTemperatura += temperatura;
+      strTemperatura.toCharArray(charTemperatura, 5);
+      int temperaturaDecimal = charTemperatura[0] - '0';
+      int temperaturaUnidad = charTemperatura[1] - '0';
+      digitalWrite(gndUnidad, HIGH);
+      digitalWrite(gndDecimal, LOW);
+      digitalPrint(temperaturaDecimal);
+      delay(10);
+      digitalWrite(gndDecimal, HIGH);
+      digitalWrite(gndUnidad, LOW);
+      digitalPrint(temperaturaUnidad);
+      delay(10);
+      strTemperatura = "";
+    }
+  }
+  else
+  {
+  sumar = digitalRead(botonSumar);
+  restar = digitalRead(botonRestar);
+  
+  lecturaSwitch = digitalRead(entradaSwitch);
+  if (lecturaSwitch == 0)
+  {
+    digitalPrint(numeros);
+  	if(decimales == 0)
+  	{
+    	digitalWrite(gndDecimal, HIGH);
+  	}
+
+  
+  		if (sumar == 0) //Suma
+    	{
+      	numeros++;
+      	if(decimales >= 9 and numeros >= 9)
+      	{
+        	decimales = 0;
+      		numeros = 0;
+      	}
+      	if (numeros > 9 and decimales < 9)
+      	{
+        	decimales++;
+      		numeros = 0;
+      	}
+    	}
+  		if (restar == 0) 
+    	{
+      	numeros --; //Resta
+      	if (numeros < 0 and decimales > 0)
+      	{
+        	Serial.println("Pase por aca2");
+        	decimales --;
+      		numeros = 9;
+      	}
+      	if (numeros <0 and decimales == 0)
+      	{
+        	Serial.println("Pase por aca");
+        	numeros = 9;
+      		decimales = 9;
+      	}
+    	}
+  	
+  		if (decimales > 0 and decimales < 10)
+    	{
+    		digitalWrite(gndDecimal, LOW);
+      		digitalWrite(gndUnidad, HIGH);
+      		digitalPrint(decimales);
+      		delay(50);
+      		digitalWrite(gndUnidad, LOW);
+      		digitalWrite(gndDecimal, HIGH);
+      		digitalPrint(numeros);    
+    	}
+
+  }
+  else
+  {
+    int largoLista = (sizeof(numerosPrimos) / sizeof(numerosPrimos[0])) - 1;
+    int primo = numerosPrimos[indice];
+    digitalPrint(primo);
+    if (sumar == 0)
+    {
+      indice++;
+    }
+    if (restar == 0)
+    {
+      indice--;
+    }
+    if (primo >= 0 and primo < 10)
+      {
+        digitalWrite(gndDecimal, HIGH);
+        strPrimo += primo; //convierte el entero a String
+        strPrimo.toCharArray(charPrimo, 5); //convierto el String a char asi puedo obtener el indice del numero que quiero
+        int numeroPrimo = charPrimo[0] - '0'; //convierto el char obtenido del primer indice a entero asi poder visualizarlo en el led
+        digitalPrint(numeroPrimo);
+        delay(100);
+        strPrimo = "";
+      }
+    if (primo >9 and primo <100)
+      {
+        strPrimo += primo;
+        strPrimo.toCharArray(charPrimo, 5);
+        int numeroPrimoDecimal = charPrimo[0] - '0';
+        int numeroPrimoUnidad = charPrimo[1] - '0';
+       	digitalWrite(gndDecimal, LOW);
+      	digitalWrite(gndUnidad, HIGH);
+      	digitalPrint(numeroPrimoDecimal);
+      	delay(100);
+      	digitalWrite(gndUnidad, LOW);
+      	digitalWrite(gndDecimal, HIGH);
+      	digitalPrint(numeroPrimoUnidad);
+        strPrimo = "";
+       }
+    if (indice <0)
+    {
+      primo = numerosPrimos[largoLista];
+        strPrimo += primo;
+        strPrimo.toCharArray(charPrimo, 5);
+        int numeroPrimoDecimal = charPrimo[0] - '0';
+        int numeroPrimoUnidad = charPrimo[1] - '0';
+       	digitalWrite(gndDecimal, LOW);
+      	digitalWrite(gndUnidad, HIGH);
+      	digitalPrint(numeroPrimoDecimal);
+      	delay(100);
+      	digitalWrite(gndUnidad, LOW);
+      	digitalWrite(gndDecimal, HIGH);
+      	digitalPrint(numeroPrimoUnidad);
+        strPrimo = "";
+      indice = largoLista;
+    }
+    if (indice > largoLista)
+    {
+      indice = 0;
+    }
+      
+    }
+  }
+  }
+  
+  	delay(50);
+}
+void digitalPrint(int numero)
+{
+  digitalWrite(A, LOW);
+  digitalWrite(B, LOW);
+  digitalWrite(C, LOW);
+  digitalWrite(D, LOW);
+  digitalWrite(E, LOW);
+  digitalWrite(F, LOW);
+  digitalWrite(G, LOW);
+  switch (numero)
+  {
+    case 0:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, HIGH);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, LOW);
+      	break;
+    }
+    case 1:
+    {
+    	digitalWrite(A, LOW);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, LOW);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, LOW);
+  		digitalWrite(G, LOW);
+      	break;
+    }
+    case 2:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, LOW);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, HIGH);
+  		digitalWrite(F, LOW);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 3:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, LOW);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 4:
+    {
+    	digitalWrite(A, LOW);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, LOW);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 5:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, LOW);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 6:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, LOW);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, HIGH);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 7:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, LOW);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, LOW);
+  		digitalWrite(G, LOW);
+      	break;
+    }
+    case 8:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, HIGH);
+  		digitalWrite(E, HIGH);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 9:
+    {
+    	digitalWrite(A, HIGH);
+  		digitalWrite(B, HIGH);
+  		digitalWrite(C, HIGH);
+  		digitalWrite(D, LOW);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, HIGH);
+  		digitalWrite(G, HIGH);
+      	break;
+    }
+    case 10:
+    {
+		digitalWrite(A, LOW);
+  		digitalWrite(B, LOW);
+  		digitalWrite(C, LOW);
+  		digitalWrite(D, LOW);
+  		digitalWrite(E, LOW);
+  		digitalWrite(F, LOW);
+  		digitalWrite(G, LOW);
+    }
+  }
+}
