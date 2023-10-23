@@ -72,7 +72,6 @@ void loop()
     digitalWrite(salidaMotor, LOW);
     digitalPrint(10);
     energia = 0;
-    Serial.println(fotoresistencia);
     if (fotoresistencia > 867)
     {
       //map(fotoresistencia, 1022, 713, 5, 3.5);
@@ -147,13 +146,11 @@ void loop()
       	numeros --; //Resta
       	if (numeros < 0 and decimales > 0)
       	{
-        	Serial.println("Pase por aca2");
         	decimales --;
       		numeros = 9;
       	}
       	if (numeros <0 and decimales == 0)
       	{
-        	Serial.println("Pase por aca");
         	numeros = 9;
       		decimales = 9;
       	}
